@@ -23,14 +23,21 @@ jobs:
           flutter-version: '3.19.x'
           channel: 'stable'
 
+      - name: Create Flutter Project Structure
+        run: |
+          cd ..
+          flutter create temp_app
+          cp -r temp_app/android $GITHUB_WORKSPACE/
+          cp -r temp_app/ios $GITHUB_WORKSPACE/
+
       - name: Install Dependencies
         run: flutter pub get
 
       - name: Build APK
         run: flutter build apk --release --no-tree-shake-icons
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: release-apk
+          name: Fiber-App-Release
           path: build/app/outputs/flutter-apk/app-release.apk
