@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>فیبریار — مدیریت شبکه فیبر نوری FTTH</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --bg:#0F1626;
+  --panel:#19233A;
+  --panel-2:#212C46;
+  --border:#2B3856;
+  --text:#EDEFF7;
+  --muted:#8D97B8;
+  --accent:#3FD3C7;
+  --accent-ink:#04211f;
+  --amber:#E8A33D;
+  --danger:#E2596B;
+  --ok:#8FD98A;
+  --violet:#B5179E;
+  --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{font-family:'Vazirmatn',sans-serif;background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;}
+button,input,select,textarea{font-family:inherit;}
+.hidden{display:none !important;}
+
+.banner{background:rgba(226,89,107,.12);border-bottom:1px solid var(--danger);color:var(--danger);padding:8px 20px;font-size:13px;text-align:center;}
+
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 12px;}
+.brand{font-size:19px;font-weight:800;display:flex;align-items:center;gap:9px;}
+.brand-dot{width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px var(--accent);flex-shrink:0;}
+.brand-sub{color:var(--muted);font-size:12px;font-weight:400;}
+
+.tabs{display:flex;gap:4px;overflow-x:auto;padding:0 20px 12px;border-bottom:1px solid var(--border);}
+.tab{padding:8px 15px;border-radius:8px;font-size:13.5px;color:var(--muted);cursor:pointer;white-space:nowrap;border:1px solid transparent;user-select:none;}
+.tab.active{background:var(--panel-2);color:var(--text);border-color:var(--border);}
+
+.container{padding:18px;max-width:1000px;margin:0 auto;}
+.loading{text-align:center;padding:60px 20px;color:var(--muted);}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:22px;}
+.stat-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:15px 16px;border-right:3px solid var(--accent);}
+.stat-num{font-size:24px;font-weight:800;}
+.stat-label{color:var(--muted);font-size:12px;margin-top:4px;}
+
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;gap:10px;flex-wrap:wrap;}
+.section-title{font-size:17px;font-weight:700;}
+
+.btn{border:1px solid var(--border);background:var(--panel-2);color:var(--text);padding:9px 15px;border-radius:8px;font-size:13.5px;cursor:pointer;}
+.btn:hover{border-color:var(--accent);}
+.btn-primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:700;}
+.btn-danger{color:var(--danger);}
+.btn-sm{padding:5px 11px;font-size:12px;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+.btn.active-mode{background:var(--amber);color:#2b1a02;border-color:var(--amber);font-weight:700;}
+
+.search-input{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-size:13.5px;width:100%;max-width:220px;}
+
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:11px;overflow:hidden;}
+.card-head{display:flex;justify-content:space-between;align-items:center;padding:13px 16px;cursor:pointer;gap:10px;}
+.card-head-main{display:flex;align-items:center;gap:10px;min-width:0;}
+.card-title{font-weight:700;font-size:14.5px;}
+.card-sub{color:var(--muted);font-size:12.5px;margin-top:3px;}
+.card-body{padding:14px 16px 16px;border-top:1px solid var(--border);}
+.card-actions{display:flex;gap:6px;flex-shrink:0;}
+
+form.inline-form{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;}
+.form-title{font-weight:700;font-size:14px;margin-bottom:10px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;}
+.field label{display:block;font-size:11.5px;color:var(--muted);margin-bottom:5px;}
+.input,.select,textarea{width:100%;background:var(--panel);border:1px solid var(--border);border-radius:7px;padding:9px 10px;color:var(--text);font-size:13.5px;}
+textarea{resize:vertical;min-height:56px;}
+.form-actions{display:flex;gap:8px;justify-content:flex-start;margin-top:12px;}
+.radio-row{display:flex;gap:16px;align-items:center;font-size:13px;margin:6px 0 2px;flex-wrap:wrap;}
+.radio-row label{display:flex;align-items:center;gap:6px;color:var(--text);cursor:pointer;}
+
+.hint{color:var(--muted);font-size:12px;margin-top:8px;}
+.empty-state{text-align:center;padding:36px 18px;color:var(--muted);font-size:13.5px;}
+.empty-state .btn{margin-top:14px;}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--panel-2);border:1px solid var(--border);padding:10px 18px;border-radius:20px;font-size:12.5px;z-index:100;box-shadow:0 6px 20px rgba(0,0,0,.4);max-width:90%;text-align:center;}
+.toast.err{border-color:var(--danger);color:var(--danger);}
+
+/* diagram */
+.hint-bar{background:var(--panel-2);border:1px solid var(--border);border-radius:8px;padding:9px 14px;font-size:13px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+.svg-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:auto;background:var(--bg);margin-bottom:14px;}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--muted);margin-bottom:14px;}
+.legend-item{display:flex;align-items:center;gap:5px;}
+.legend-swatch{width:10px;height:10px;border-radius:50%;display:inline-block;}
+
+.core-swatch{display:inline-block;width:13px;height:13px;border-radius:3px;flex-shrink:0;box-shadow:0 0 0 1px rgba(255,255,255,.18) inset;}
+.swatch-pair{display:inline-flex;align-items:center;gap:2px;}
+
+.chain-row{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:8px;font-size:12.5px;}
+.chain-range{font-weight:700;margin-left:6px;}
+.chain-arrow{color:var(--muted);margin:0 5px;}
+.chain-hop{color:var(--text);}
+.chain-final{font-weight:700;}
+.chain-final.term{color:var(--ok);}
+.chain-final.unassigned{color:var(--amber);}
+.chain-final.cycle{color:var(--danger);}
+
+.table{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px;}
+.table th{text-align:right;color:var(--muted);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--border);font-size:11.5px;}
+.table td{padding:8px 6px;border-bottom:1px solid var(--border);vertical-align:middle;}
+
+.node-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px;}
+.node-chip{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);padding:5px 10px;border-radius:20px;font-size:12px;cursor:pointer;}
+.node-chip:hover{border-color:var(--accent);}
+
+@media (max-width:600px){
+  .container{padding:12px;}
+  .form-grid{grid-template-columns:1fr;}
+  .search-input{max-width:none;}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ================= fiber color model (per Iran field standard supplied) ================= */
+/* 6 core colors cycling inside each tube; 12 tube colors cycling every 72 cores */
+const CORE_COLORS = [
+  {name:'سفید', hex:'#F2F2ED'},
+  {name:'قرمز', hex:'#E13B3B'},
+  {name:'سبز', hex:'#2FA84F'},
+  {name:'آبی', hex:'#29ABE2'},
+  {name:'زرد', hex:'#F2D024'},
+  {name:'مشکی', hex:'#202020'},
+];
+const TUBE_COLORS = [
+  {name:'سفید', hex:'#F2F2ED'},
+  {name:'قرمز', hex:'#E13B3B'},
+  {name:'سبز', hex:'#2FA84F'},
+  {name:'آبی', hex:'#29ABE2'},
+  {name:'زرد', hex:'#F2D024'},
+  {name:'مشکی', hex:'#202020'},
+  {name:'قهوه‌ای', hex:'#8B5A2B'},
+  {name:'بنفش', hex:'#B5179E'},
+  {name:'نارنجی', hex:'#F2892E'},
+  {name:'صورتی', hex:'#F2A6D0'},
+  {name:'توسی', hex:'#9AA3B5'},
+  {name:'بی‌رنگ', hex:'#3A445E', dashed:true},
+];
+function coreInfo(n){
+  const coreIdx = (n-1)%6;
+  const tubeIdx = Math.floor((n-1)/6)%12;
+  const cycle = Math.floor((n-1)/72)+1;
+  return { number:n, tube:tubeIdx+1, cycle, core:CORE_COLORS[coreIdx], tubeColor:TUBE_COLORS[tubeIdx] };
+}
+function swatchHTML(n){
+  const info = coreInfo(n);
+  const border = info.tubeColor.dashed ? `2px dashed ${info.tubeColor.hex}` : `2px solid ${info.tubeColor.hex}`;
+  return `<span class="core-swatch" style="background:${info.core.hex};border:${border};" title="کور #${n} — تیوب ${info.tube} (${info.tubeColor.name}) / رنگ کور: ${info.core.name}"></span>`;
+}
+function coreLabelShort(n){
+  const info = coreInfo(n);
+  return `#${n} (تیوب${info.tube}-${info.tubeColor.name}/${info.core.name})`;
+}
+
+/* ================= ids & node types ================= */
+function uid(){ return (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2); }
+const NODE_TYPES = {
+  olt:{label:'مرکز / OLT', color:'#EDEFF7'},
+  closure:{label:'مفصل', color:'#3FD3C7'},
+  odc:{label:'ODC', color:'#E8A33D'},
+  fat:{label:'FAT', color:'#B5179E'},
+  endpoint:{label:'مقصد نهایی (مشترک/دستگاه)', color:'#8FD98A'},
+};
+
+/* ================= state ================= */
+let state = {
+  loaded:false, noStorage:false,
+  nodes:[], cables:[], assignments:[],
+  view:'dashboard',
+  cableSearch:'',
+  activeCableId:null, activeNodeId:null,
+  editingCableId:null, editingNodeId:null,
+  showManualCableForm:false,
+  diagMode:'view', // view | placingNode | connectPick1 | connectPick2 | movePick1 | movePick2
+  connectFromId:null, moveNodeId:null,
+  pendingNode:null, pendingCable:null,
+  showAddAssign:false, assignAction:'continue',
+  traceCableId:'', traceCore:'',
+};
+
+/* ================= storage ================= */
+async function loadData(){
+  if(!window.storage){ state.noStorage=true; state.loaded=true; render(); return; }
+  try{ const r = await window.storage.get('fy-nodes', false); state.nodes = r&&r.value?JSON.parse(r.value):[]; }catch(e){ state.nodes=[]; }
+  try{ const r = await window.storage.get('fy-cables', false); state.cables = r&&r.value?JSON.parse(r.value):[]; }catch(e){ state.cables=[]; }
+  try{ const r = await window.storage.get('fy-assignments', false); state.assignments = r&&r.value?JSON.parse(r.value):[]; }catch(e){ state.assignments=[]; }
+  state.loaded=true; render();
+}
+async function saveNodes(){ if(state.noStorage) return; try{ await window.storage.set('fy-nodes', JSON.stringify(state.nodes), false);}catch(e){ toast('ذخیره‌سازی گره‌ها ناموفق بود', true); } }
+async function saveCables(){ if(state.noStorage) return; try{ await window.storage.set('fy-cables', JSON.stringify(state.cables), false);}catch(e){ toast('ذخیره‌سازی کابل‌ها ناموفق بود', true); } }
+async function saveAssignments(){ if(state.noStorage) return; try{ await window.storage.set('fy-assignments', JSON.stringify(state.assignments), false);}catch(e){ toast('ذخیره‌سازی انشعاب‌ها ناموفق بود', true); } }
+
+function toast(msg, isErr){
+  const old=document.querySelector('.toast'); if(old) old.remove();
+  const el=document.createElement('div'); el.className='toast'+(isErr?' err':''); el.textContent=msg;
+  document.body.appendChild(el); setTimeout(()=>el.remove(),2800);
+}
+
+/* ================= lookups ================= */
+function getNode(id){ return state.nodes.find(n=>n.id===id); }
+function getCable(id){ return state.cables.find(c=>c.id===id); }
+function nodeName(id){ const n=getNode(id); return n? n.name : 'گره حذف‌شده'; }
+function cableName(id){ const c=getCable(id); return c? c.name : 'کابل حذف‌شده'; }
+function outgoingCables(nodeId, excludeCableId){ return state.cables.filter(c=>c.fromNodeId===nodeId && c.id!==excludeCableId); }
+
+function findAssignment(cableId, core){
+  return state.assignments.find(a=>a.cableId===cableId && core>=a.coreStart && core<=a.coreEnd);
+}
+function assignmentsFor(cableId){ return state.assignments.filter(a=>a.cableId===cableId).sort((a,b)=>a.coreStart-b.coreStart); }
+
+/* per-core recursive trace, returns signature string used for grouping */
+function traceCoreSig(cableId, core, visited){
+  visited = visited || new Set();
+  const key = cableId+':'+core;
+  if(visited.has(key)) return 'CYCLE';
+  visited.add(key);
+  const a = findAssignment(cableId, core);
+  if(!a) return 'U';
+  if(a.action==='terminate') return 'T:'+(a.label||nodeName(getCable(cableId).toNodeId));
+  const nextCore = a.toCoreStart + (core - a.coreStart);
+  return a.toCableId+'>'+traceCoreSig(a.toCableId, nextCore, visited);
+}
+
+/* range-based trace for display, walks a whole contiguous range at once */
+function traceRangeChain(cableId, rs, re, visited){
+  visited = visited || new Set();
+  const key = cableId+':'+rs+'-'+re;
+  const chain = [];
+  let curCable=cableId, curRs=rs, curRe=re;
+  while(true){
+    const k = curCable+':'+curRs+'-'+curRe;
+    if(visited.has(k)) return {chain, end:{type:'cycle'}};
+    visited.add(k);
+    const a = findAssignment(curCable, curRs);
+    if(!a) return {chain, end:{type:'unassigned'}};
+    if(a.action==='terminate'){
+      return {chain, end:{type:'terminate', label:a.label || nodeName(getCable(curCable).toNodeId)}};
+    }
+    const ns = a.toCoreStart + (curRs - a.coreStart);
+    const ne = a.toCoreStart + (curRe - a.coreStart);
+    chain.push({cableId:a.toCableId, rs:ns, re:ne});
+    curCable = a.toCableId; curRs=ns; curRe=ne;
+  }
+}
+
+function cableBreakdownGroups(cable){
+  const groups=[];
+  let i=1;
+  while(i<=cable.coreCount){
+    const sig = traceCoreSig(cable.id, i, new Set());
+    let j=i;
+    while(j+1<=cable.coreCount && traceCoreSig(cable.id, j+1, new Set())===sig) j++;
+    groups.push({rs:i, re:j, sig});
+    i=j+1;
+  }
+  return groups;
+}
+
+/* ================= render ================= */
+function render(){
+  const app = document.getElementById('app');
+  if(!state.loaded){ app.innerHTML = '<div class="loading">در حال بارگذاری اطلاعات…</div>'; return; }
+  let html='';
+  if(state.noStorage) html += '<div class="banner">ذخیره‌سازی در این محیط در دسترس نیست؛ تغییرات فقط تا پایان این جلسه باقی می‌مانند.</div>';
+  html += topbarHTML() + tabsHTML() + '<div class="container">'+viewHTML()+'</div>';
+  app.innerHTML = html;
+}
+function topbarHTML(){
+  return `<div class="topbar"><div class="brand"><span class="brand-dot"></span>فیبریار <span class="brand-sub">— مدیریت شبکه فیبر نوری FTTH</span></div></div>`;
+}
+function tabsHTML(){
+  const tabs=[['dashboard','داشبورد'],['diagram','نمای شبکه'],['cables','کابل‌ها'],['trace','ردیابی کور']];
+  return '<div class="tabs">'+tabs.map(([id,l])=>`<div class="tab ${state.view===id?'active':''}" data-action="setView" data-view="${id}">${l}</div>`).join('')+'</div>';
+}
+function viewHTML(){
+  if(state.view==='diagram') return renderDiagram();
+  if(state.view==='cables') return renderCables();
+  if(state.view==='trace') return renderTrace();
+  return renderDashboard();
+}
+
+/* ---- dashboard ---- */
+function renderDashboard(){
+  const totalCores = state.cables.reduce((s,c)=>s+Number(c.coreCount||0),0);
+  let assignedCores=0;
+  state.cables.forEach(c=>assignmentsFor(c.id).forEach(a=>assignedCores += (a.coreEnd-a.coreStart+1)));
+  const destCount = state.assignments.filter(a=>a.action==='terminate').length;
+  const stats=[
+    [state.nodes.length,'گره ثبت‌شده'],
+    [state.cables.length,'کابل ثبت‌شده'],
+    [totalCores,'مجموع کورها'],
+    [assignedCores,'کور تعریف‌شده'],
+    [destCount,'مقصد نهایی'],
+  ];
+  let html = '<div class="stats-row">'+stats.map(([n,l])=>`<div class="stat-card"><div class="stat-num">${n}</div><div class="stat-label">${l}</div></div>`).join('')+'</div>';
+  if(state.nodes.length===0){
+    html += `<div class="empty-state">برای شروع، وارد «نمای شبکه» شو و اولین گره (مثلاً مرکز مخابرات) را اضافه کن.<br><button class="btn btn-primary" data-action="setView" data-view="diagram">رفتن به نمای شبکه</button></div>`;
+  } else if(state.cables.length===0){
+    html += `<div class="empty-state">حالا بین گره‌ها کابل بکش تا شبکه شکل بگیرد.<br><button class="btn btn-primary" data-action="setView" data-view="diagram">رفتن به نمای شبکه</button></div>`;
+  } else {
+    html += `<div class="section-head"><div class="section-title">کابل‌های اخیر</div></div>`;
+    state.cables.slice(-5).reverse().forEach(c=>{
+      html += `<div class="card"><div class="card-head" data-action="openCableFromList" data-id="${c.id}">
+        <div class="card-head-main"><div><div class="card-title">${esc(c.name)}</div><div class="card-sub">${esc(nodeName(c.fromNodeId))} ← ${esc(nodeName(c.toNodeId))} · ${c.coreCount} کور</div></div></div>
+      </div></div>`;
+    });
+  }
+  return html;
+}
+
+/* ---- diagram ---- */
+function modeHint(){
+  switch(state.diagMode){
+    case 'placingNode': return 'روی نقشه کلیک کن تا گرهٔ جدید در آن نقطه قرار بگیرد.';
+    case 'connectPick1': return 'گرهٔ نزدیک‌تر به مرکز (ابتدای کابل) را انتخاب کن.';
+    case 'connectPick2': return 'گرهٔ دوم (انتهای کابل) را انتخاب کن.';
+    case 'movePick1': return 'گره‌ای که می‌خواهی جابه‌جا کنی را انتخاب کن.';
+    case 'movePick2': return 'مکان جدید را روی نقشه انتخاب کن.';
+    default: return 'روی یک گره یا کابل کلیک کن تا جزئیاتش را ببینی.';
+  }
+}
+function renderDiagram(){
+  let html = `<div class="section-head"><div class="section-title">نمای شبکه</div>
+    <div class="btn-row">
+      <button class="btn ${state.diagMode==='placingNode'?'active-mode':''}" data-action="modeAddNode">+ گره</button>
+      <button class="btn ${state.diagMode.startsWith('connect')?'active-mode':''}" data-action="modeAddCable">+ کابل</button>
+      <button class="btn ${state.diagMode.startsWith('move')?'active-mode':''}" data-action="modeMoveNode">جابه‌جایی گره</button>
+      ${state.diagMode!=='view' ? '<button class="btn btn-danger" data-action="modeCancel">لغو</button>' : ''}
+    </div></div>`;
+
+  html += `<div class="hint-bar"><span>${modeHint()}</span></div>`;
+
+  if(state.pendingNode) html += nodeFormHTML(null, state.pendingNode);
+  if(state.editingNodeId) html += nodeFormHTML(getNode(state.editingNodeId));
+  if(state.pendingCable) html += cableFormHTML(null, state.pendingCable);
+  if(state.editingCableId && !state.pendingCable) html += cableFormHTML(getCable(state.editingCableId));
+
+  html += `<div class="legend-row">${Object.entries(NODE_TYPES).map(([k,v])=>`<span class="legend-item"><span class="legend-swatch" style="background:${v.color}"></span>${v.label}</span>`).join('')}</div>`;
+
+  html += `<div class="svg-wrap">${diagramSVG()}</div>`;
+
+  if(state.nodes.length && !state.pendingNode && !state.editingNodeId){
+    html += `<div class="node-chips">${state.nodes.map(n=>`<span class="node-chip" data-action="nodeClick" data-id="${n.id}"><span class="legend-swatch" style="background:${NODE_TYPES[n.type].color}"></span>${esc(n.name)}</span>`).join('')}</div>`;
+  }
+
+  if(state.activeNodeId && !state.editingNodeId){
+    const n = getNode(state.activeNodeId);
+    if(n) html += nodeDetailHTML(n);
+  }
+  if(state.activeCableId && !state.editingCableId && !state.pendingCable){
+    const c = getCable(state.activeCableId);
+    if(c) html += cableDetailHTML(c);
+  }
+  return html;
+}
+
+function diagramSVG(){
+  const W=1500,H=560;
+  let bg = `<rect x="0" y="0" width="${W}" height="${H}" fill="var(--bg)" data-action="canvasClick"></rect>`;
+  let defs = `<defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#212C46"/></pattern></defs>`;
+  let gridRect = `<rect x="0" y="0" width="${W}" height="${H}" fill="url(#grid)" data-action="canvasClick"></rect>`;
+
+  let edges = state.cables.map(c=>{
+    const a = getNode(c.fromNodeId), b = getNode(c.toNodeId);
+    if(!a||!b) return '';
+    const sel = state.activeCableId===c.id;
+    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    return `<g>
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${sel?'var(--amber)':'var(--accent)'}" stroke-width="${sel?3:2}"></line>
+      <line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="transparent" stroke-width="18" data-action="cableClick" data-id="${c.id}" style="cursor:pointer"></line>
+      <rect x="${mx-38}" y="${my-16}" width="76" height="15" fill="var(--bg)" opacity="0.75" pointer-events="none"></rect>
+      <text x="${mx}" y="${my-5}" text-anchor="middle" fill="${sel?'var(--amber)':'var(--muted)'}" font-size="10" font-family="Vazirmatn" pointer-events="none">${esc(c.name)} · ${c.coreCount}ک</text>
+    </g>`;
+  }).join('');
+
+  let nodes = state.nodes.map(n=>{
+    const sel = state.activeNodeId===n.id;
+    const color = sel ? 'var(--amber)' : NODE_TYPES[n.type].color;
+    let shape='';
+    if(n.type==='olt') shape=`<rect x="${n.x-13}" y="${n.y-13}" width="26" height="26" rx="4" fill="#0B1220" stroke="${color}" stroke-width="2.5"></rect>`;
+    else if(n.type==='odc') shape=`<rect x="${n.x-9}" y="${n.y-9}" width="18" height="18" fill="var(--panel)" stroke="${color}" stroke-width="2.5"></rect>`;
+    else if(n.type==='fat') shape=`<rect x="${n.x-9}" y="${n.y-9}" width="18" height="18" rx="8" fill="var(--panel)" stroke="${color}" stroke-width="2.5"></rect>`;
+    else if(n.type==='endpoint') shape=`<circle cx="${n.x}" cy="${n.y}" r="9" fill="${color}" stroke="#0B1220" stroke-width="1.5"></circle>`;
+    else shape=`<circle cx="${n.x}" cy="${n.y}" r="7" fill="var(--panel)" stroke="${color}" stroke-width="2.5"></circle>`;
+    return `<g>
+      ${shape}
+      <circle cx="${n.x}" cy="${n.y}" r="17" fill="transparent" data-action="nodeClick" data-id="${n.id}" style="cursor:pointer"></circle>
+      <rect x="${n.x-45}" y="${n.y-32}" width="90" height="14" fill="var(--bg)" opacity="0.75" pointer-events="none"></rect>
+      <text x="${n.x}" y="${n.y-21}" text-anchor="middle" fill="var(--text)" font-size="11" font-weight="600" font-family="Vazirmatn" pointer-events="none">${esc(n.name)}</text>
+    </g>`;
+  }).join('');
+
+  return `<svg width="${W}" height="${H}" style="display:block;">${defs}${bg}${gridRect}${edges}${nodes}</svg>`;
+}
+
+function nodeFormHTML(editing, pending){
+  const v = editing || {name:'', type:'closure', x: pending?pending.x:0, y: pending?pending.y:0};
+  return `<form class="inline-form" data-action="submitNode" data-id="${editing?editing.id:''}">
+    <div class="form-title">${editing?'ویرایش گره':'گرهٔ جدید'}</div>
+    <input type="hidden" name="x" value="${v.x}"><input type="hidden" name="y" value="${v.y}">
+    <div class="form-grid">
+      <div class="field"><label>نام گره</label><input class="input" name="name" required value="${esc(v.name)}" placeholder="مثلاً: مفصل B یا بانک ملی شعبه بازار"></div>
+      <div class="field"><label>نوع</label><select class="select" name="type">${Object.entries(NODE_TYPES).map(([k,t])=>`<option value="${k}" ${v.type===k?'selected':''}>${t.label}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">${editing?'ذخیره تغییرات':'افزودن گره'}</button>
+      <button type="button" class="btn" data-action="cancelNodeForm">انصراف</button>
+      ${editing?`<button type="button" class="btn btn-danger" data-action="deleteNode" data-id="${editing.id}" style="margin-right:auto;">حذف گره</button>`:''}
+    </div>
+  </form>`;
+}
+
+function cableFormHTML(editing, pending){
+  const v = editing || {name:'', coreCount:12, length:'', notes:''};
+  const fromId = editing?editing.fromNodeId:(pending?pending.fromNodeId:'');
+  const toId = editing?editing.toNodeId:(pending?pending.toNodeId:'');
+  return `<form class="inline-form" data-action="submitCable" data-id="${editing?editing.id:''}" data-from="${fromId}" data-to="${toId}">
+    <div class="form-title">${editing?'ویرایش کابل':'کابل جدید'}: ${esc(nodeName(fromId))} ← ${esc(nodeName(toId))}</div>
+    <div class="form-grid">
+      <div class="field"><label>نام کابل</label><input class="input" name="name" required value="${esc(v.name)}" placeholder="مثلاً: 9/72CORE"></div>
+      <div class="field"><label>تعداد کور</label><input class="input" type="number" min="1" max="864" name="coreCount" required value="${v.coreCount}"></div>
+      <div class="field"><label>طول (متر)</label><input class="input" type="number" step="0.1" min="0" name="length" value="${esc(v.length)}"></div>
+    </div>
+    <div class="field" style="margin-top:10px;"><label>یادداشت</label><textarea class="input" name="notes">${esc(v.notes||'')}</textarea></div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">${editing?'ذخیره تغییرات':'افزودن کابل'}</button>
+      <button type="button" class="btn" data-action="cancelCableForm">انصراف</button>
+      ${editing?`<button type="button" class="btn btn-danger" data-action="deleteCable" data-id="${editing.id}" style="margin-right:auto;">حذف کابل</button>`:''}
+    </div>
+  </form>`;
+}
+
+function nodeDetailHTML(n){
+  const inc = state.cables.filter(c=>c.toNodeId===n.id);
+  const out = state.cables.filter(c=>c.fromNodeId===n.id);
+  return `<div class="card"><div class="card-body" style="border-top:none;">
+    <div class="section-head"><div class="section-title">${esc(n.name)} <span style="color:var(--muted);font-size:12px;font-weight:400;">(${NODE_TYPES[n.type].label})</span></div>
+      <div class="btn-row"><button class="btn btn-sm" data-action="editNode" data-id="${n.id}">ویرایش</button><button class="btn btn-sm" data-action="closeNodePanel">بستن</button></div>
+    </div>
+    <div class="hint">کابل‌های ورودی: ${inc.length?inc.map(c=>esc(c.name)).join('، '):'—'}</div>
+    <div class="hint">کابل‌های خروجی: ${out.length?out.map(c=>esc(c.name)).join('، '):'—'}</div>
+  </div></div>`;
+}
+
+/* ---- cable detail: breakdown + assignment editor (shared by diagram & cables tab) ---- */
+function cableDetailHTML(cable){
+  const groups = cable.coreCount ? cableBreakdownGroups(cable) : [];
+  const rows = groups.map(g=>{
+    const res = traceRangeChain(cable.id, g.rs, g.re, new Set());
+    let chainHtml = res.chain.map(h=>`<span class="chain-arrow">←</span><span class="chain-hop">${esc(cableName(h.cableId))} (${h.rs===h.re?('#'+h.rs):(h.rs+'-'+h.re)})</span>`).join('');
+    let finalHtml='';
+    if(res.end.type==='terminate') finalHtml = `<span class="chain-arrow">←</span><span class="chain-final term">پایان: ${esc(res.end.label)}</span>`;
+    else if(res.end.type==='unassigned') finalHtml = `<span class="chain-arrow">←</span><span class="chain-final unassigned">ادامه تعریف نشده</span>`;
+    else if(res.end.type==='cycle') finalHtml = `<span class="chain-arrow">←</span><span class="chain-final cycle">حلقهٔ اتصال!</span>`;
+    const sw1 = swatchHTML(g.rs), sw2 = g.re!==g.rs?swatchHTML(g.re):'';
+    return `<div class="chain-row">
+      <span class="swatch-pair">${sw1}${sw2}</span>
+      <span class="chain-range">کور ${g.rs===g.re?('#'+g.rs):(g.rs+' تا '+g.re)}</span>
+      ${chainHtml}${finalHtml}
+    </div>`;
+  }).join('');
+
+  const assigns = assignmentsFor(cable.id);
+  const assignRows = assigns.map(a=>{
+    const desc = a.action==='terminate' ? `پایان: ${esc(a.label)}` : `ادامه در ${esc(cableName(a.toCableId))} از کور #${a.toCoreStart}`;
+    return `<tr><td>${a.coreStart===a.coreEnd?('#'+a.coreStart):(a.coreStart+'-'+a.coreEnd)}</td><td>${desc}</td><td><button class="btn btn-sm btn-danger" data-action="deleteAssignment" data-id="${a.id}" data-cable="${cable.id}">حذف</button></td></tr>`;
+  }).join('');
+
+  const addForm = state.showAddAssign ? assignFormHTML(cable) :
+    `<div class="form-actions" style="margin-top:10px;"><button class="btn btn-primary btn-sm" data-action="toggleAssignForm">+ تعریف انشعاب جدید</button></div>`;
+
+  return `<div class="card"><div class="card-body" style="border-top:none;">
+    <div class="section-head">
+      <div class="section-title">${esc(cable.name)} <span style="color:var(--muted);font-size:12px;font-weight:400;">(${esc(nodeName(cable.fromNodeId))} ← ${esc(nodeName(cable.toNodeId))})</span></div>
+      <div class="btn-row">
+        <button class="btn btn-sm" data-action="editCable" data-id="${cable.id}">ویرایش</button>
+        <button class="btn btn-sm" data-action="closeCablePanel">بستن</button>
+      </div>
+    </div>
+    <div class="hint">${cable.coreCount} کور ${cable.length?(' · '+cable.length+' متر'):''} ${cable.notes?(' · '+esc(cable.notes)):''}</div>
+
+    <div class="form-title" style="margin-top:16px;">مسیر و مقصد نهایی کورها</div>
+    ${rows || '<div class="hint">این کابل کوری ندارد.</div>'}
+
+    <div class="form-title" style="margin-top:16px;">انشعاب‌های تعریف‌شده در ${esc(nodeName(cable.toNodeId))}</div>
+    ${assigns.length ? `<table class="table"><thead><tr><th>بازهٔ کور</th><th>سرنوشت</th><th></th></tr></thead><tbody>${assignRows}</tbody></table>` : '<div class="hint">هنوز انشعابی برای این کابل تعریف نشده.</div>'}
+    ${addForm}
+  </div></div>`;
+}
+
+function assignFormHTML(cable){
+  const targets = outgoingCables(cable.toNodeId, cable.id);
+  return `<form class="inline-form" style="margin-top:12px;" data-action="submitAssignment" data-cable="${cable.id}">
+    <div class="form-title">انشعاب جدید</div>
+    <div class="form-grid">
+      <div class="field"><label>از کور</label><input class="input" type="number" min="1" max="${cable.coreCount}" name="coreStart" required></div>
+      <div class="field"><label>تا کور</label><input class="input" type="number" min="1" max="${cable.coreCount}" name="coreEnd" required></div>
+    </div>
+    <div class="radio-row">
+      <label><input type="radio" name="action" value="continue" ${state.assignAction==='continue'?'checked':''} data-action="setAssignAction"> ادامه به کابل دیگر</label>
+      <label><input type="radio" name="action" value="terminate" ${state.assignAction==='terminate'?'checked':''} data-action="setAssignAction"> پایان (مقصد نهایی همین‌جا)</label>
+    </div>
+    <div class="form-grid" style="margin-top:8px;">
+      ${state.assignAction==='continue' ? `
+        <div class="field"><label>کابل مقصد</label><select class="select" name="toCableId" required>
+          ${targets.length===0?'<option value="">— کابل خروجی از این گره وجود ندارد —</option>':targets.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}
+        </select></div>
+        <div class="field"><label>شروع از کور</label><input class="input" type="number" min="1" name="toCoreStart" required></div>
+      ` : `
+        <div class="field" style="grid-column:1/-1;"><label>توضیح مقصد نهایی (اختیاری)</label><input class="input" name="label" placeholder="پیش‌فرض: نام گره — مثلاً ${esc(nodeName(cable.toNodeId))}"></div>
+      `}
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">ثبت انشعاب</button>
+      <button type="button" class="btn" data-action="cancelAssignForm">انصراف</button>
+    </div>
+  </form>`;
+}
+
+/* ---- cables tab (list) ---- */
+function renderCables(){
+  let html = `<div class="section-head"><div class="section-title">کابل‌ها</div>
+    <div class="btn-row">
+      <input class="search-input" placeholder="جستجوی کابل…" value="${esc(state.cableSearch)}" data-bind="cableSearch">
+      ${state.nodes.length>=2 ? `<button class="btn btn-primary" data-action="toggleManualCable">${state.showManualCableForm?'بستن فرم':'+ افزودن کابل'}</button>` : ''}
+    </div></div>`;
+
+  if(state.nodes.length<2){
+    return html + `<div class="empty-state">برای ساخت کابل به حداقل دو گره نیاز داری.<br><button class="btn btn-primary" data-action="setView" data-view="diagram">رفتن به نمای شبکه</button></div>`;
+  }
+
+  if(state.showManualCableForm) html += manualCableFormHTML();
+
+  const q = state.cableSearch.trim().toLowerCase();
+  let list = state.cables;
+  if(q) list = list.filter(c=>(c.name+nodeName(c.fromNodeId)+nodeName(c.toNodeId)).toLowerCase().includes(q));
+
+  if(state.cables.length===0){
+    html += `<div class="empty-state">هنوز کابلی ثبت نشده.</div>`;
+  } else if(list.length===0){
+    html += `<div class="empty-state">کابلی با این مشخصات پیدا نشد.</div>`;
+  } else {
+    list.forEach(c=>{
+      const open = state.activeCableId===c.id;
+      html += `<div class="card">
+        <div class="card-head" data-action="toggleCableRow" data-id="${c.id}">
+          <div class="card-head-main"><div>
+            <div class="card-title">${esc(c.name)}</div>
+            <div class="card-sub">${esc(nodeName(c.fromNodeId))} ← ${esc(nodeName(c.toNodeId))} · ${c.coreCount} کور${c.length?(' · '+c.length+' متر'):''}</div>
+          </div></div>
+        </div>
+        ${open && !state.editingCableId ? `<div class="card-body">${cableDetailBody(c)}</div>` : ''}
+      </div>`;
+      if(open && state.editingCableId===c.id) html += `<div style="margin:-4px 0 12px;">${cableFormHTML(c)}</div>`;
+    });
+  }
+  return html;
+}
+/* body-only variant (without outer card wrapper) reused inside the cables-tab row */
+function cableDetailBody(cable){
+  const full = cableDetailHTML(cable);
+  // strip outer card wrapper so it nests cleanly inside the list row's own card
+  return full.replace('<div class="card"><div class="card-body" style="border-top:none;">','').replace(/<\/div>\s*<\/div>\s*$/,'');
+}
+function manualCableFormHTML(){
+  const opts = state.nodes.map(n=>`<option value="${n.id}">${esc(n.name)}</option>`).join('');
+  return `<form class="inline-form" data-action="submitCable" data-id="" data-from="" data-to="">
+    <div class="form-title">کابل جدید</div>
+    <div class="form-grid">
+      <div class="field"><label>از گره</label><select class="select" name="fromNodeId" required>${opts}</select></div>
+      <div class="field"><label>به گره</label><select class="select" name="toNodeId" required>${opts}</select></div>
+      <div class="field"><label>نام کابل</label><input class="input" name="name" required placeholder="مثلاً: 9/72CORE"></div>
+      <div class="field"><label>تعداد کور</label><input class="input" type="number" min="1" max="864" name="coreCount" required value="12"></div>
+      <div class="field"><label>طول (متر)</label><input class="input" type="number" step="0.1" min="0" name="length"></div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">افزودن کابل</button>
+      <button type="button" class="btn" data-action="cancelManualCable">انصراف</button>
+    </div>
+  </form>`;
+}
+
+/* ---- trace tab ---- */
+function renderTrace(){
+  let html = `<div class="section-head"><div class="section-title">ردیابی سریع یک کور</div></div>`;
+  if(state.cables.length===0){
+    return html + `<div class="empty-state">ابتدا حداقل یک کابل بساز.<br><button class="btn btn-primary" data-action="setView" data-view="diagram">رفتن به نمای شبکه</button></div>`;
+  }
+  const opts = state.cables.map(c=>`<option value="${c.id}" ${state.traceCableId===c.id?'selected':''}>${esc(c.name)}</option>`).join('');
+  html += `<form class="inline-form" data-action="runTrace">
+    <div class="form-grid">
+      <div class="field"><label>کابل</label><select class="select" name="cableId" required>${opts}</select></div>
+      <div class="field"><label>شماره کور</label><input class="input" type="number" min="1" name="core" required value="${esc(state.traceCore)}"></div>
+    </div>
+    <div class="form-actions"><button type="submit" class="btn btn-primary">ردیابی</button></div>
+  </form>`;
+  if(state.traceCableId && state.traceCore){
+    const cable = getCable(state.traceCableId);
+    const n = Number(state.traceCore);
+    if(cable && n>=1 && n<=cable.coreCount){
+      const res = traceRangeChain(cable.id, n, n, new Set());
+      let chainHtml = res.chain.map(h=>`<span class="chain-arrow">←</span><span class="chain-hop">${esc(cableName(h.cableId))} (#${h.rs})</span>`).join('');
+      let finalHtml='';
+      if(res.end.type==='terminate') finalHtml=`<span class="chain-arrow">←</span><span class="chain-final term">پایان: ${esc(res.end.label)}</span>`;
+      else if(res.end.type==='unassigned') finalHtml=`<span class="chain-arrow">←</span><span class="chain-final unassigned">ادامه تعریف نشده</span>`;
+      else if(res.end.type==='cycle') finalHtml=`<span class="chain-arrow">←</span><span class="chain-final cycle">حلقهٔ اتصال!</span>`;
+      html += `<div class="chain-row">${swatchHTML(n)} <span class="chain-range">${esc(cable.name)} — کور #${n}</span>${chainHtml}${finalHtml}</div>`;
+      html += `<div class="hint">${coreLabelShort(n)}</div>`;
+    }
+  }
+  return html;
+}
+
+/* ================= helpers ================= */
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function overlaps(aS,aE,bS,bE){ return aS<=bE && bS<=aE; }
+
+/* ================= actions ================= */
+async function handleAction(action, ds, el, evt){
+  if(action==='setView'){ state.view=ds.view; render(); return; }
+  if(action==='openCableFromList'){ state.view='cables'; state.activeCableId=ds.id; render(); return; }
+
+  /* diagram modes */
+  if(action==='modeAddNode'){ state.diagMode='placingNode'; state.activeCableId=null; state.activeNodeId=null; render(); return; }
+  if(action==='modeAddCable'){ state.diagMode='connectPick1'; state.connectFromId=null; state.activeCableId=null; state.activeNodeId=null; render(); return; }
+  if(action==='modeMoveNode'){ state.diagMode='movePick1'; state.moveNodeId=null; render(); return; }
+  if(action==='modeCancel'){ state.diagMode='view'; state.connectFromId=null; state.moveNodeId=null; state.pendingNode=null; state.pendingCable=null; render(); return; }
+
+  if(action==='canvasClick'){
+    const rect = el.closest('svg').getBoundingClientRect();
+    const cx = Math.round(evt.clientX - rect.left), cy = Math.round(evt.clientY - rect.top);
+    if(state.diagMode==='placingNode'){ state.pendingNode={x:cx,y:cy}; state.diagMode='view'; render(); return; }
+    if(state.diagMode==='movePick2'){
+      const n = getNode(state.moveNodeId);
+      if(n){ n.x=cx; n.y=cy; await saveNodes(); }
+      state.diagMode='view'; state.moveNodeId=null; render(); return;
+    }
+    // plain view mode: deselect
+    if(state.diagMode==='view'){ state.activeCableId=null; state.activeNodeId=null; render(); }
+    return;
+  }
+
+  if(action==='nodeClick'){
+    if(state.diagMode==='connectPick1'){ state.connectFromId=ds.id; state.diagMode='connectPick2'; render(); return; }
+    if(state.diagMode==='connectPick2'){
+      if(ds.id===state.connectFromId){ toast('دو گره باید متفاوت باشند', true); return; }
+      state.pendingCable={fromNodeId:state.connectFromId, toNodeId:ds.id};
+      state.diagMode='view'; state.connectFromId=null; render(); return;
+    }
+    if(state.diagMode==='movePick1'){ state.moveNodeId=ds.id; state.diagMode='movePick2'; render(); return; }
+    if(state.diagMode==='view'){ state.activeNodeId=ds.id; state.activeCableId=null; render(); return; }
+    return;
+  }
+  if(action==='cableClick'){
+    if(state.diagMode==='view'){ state.activeCableId=ds.id; state.activeNodeId=null; render(); }
+    return;
+  }
+  if(action==='toggleCableRow'){ state.activeCableId = state.activeCableId===ds.id? null: ds.id; state.editingCableId=null; render(); return; }
+
+  /* node form */
+  if(action==='cancelNodeForm'){ state.pendingNode=null; state.editingNodeId=null; render(); return; }
+  if(action==='editNode'){ state.editingNodeId=ds.id; render(); return; }
+  if(action==='closeNodePanel'){ state.activeNodeId=null; render(); return; }
+  if(action==='deleteNode'){
+    if(confirm('این گره حذف شود؟ کابل‌های متصل به آن هم حذف خواهند شد.')){
+      const cablesToRemove = state.cables.filter(c=>c.fromNodeId===ds.id || c.toNodeId===ds.id).map(c=>c.id);
+      state.cables = state.cables.filter(c=>!cablesToRemove.includes(c.id));
+      state.assignments = state.assignments.filter(a=>!cablesToRemove.includes(a.cableId) && !cablesToRemove.includes(a.toCableId));
+      state.nodes = state.nodes.filter(n=>n.id!==ds.id);
+      state.editingNodeId=null; state.activeNodeId=null; state.activeCableId=null;
+      await saveNodes(); await saveCables(); await saveAssignments();
+      toast('گره حذف شد'); render();
+    }
+    return;
+  }
+
+  /* cable form */
+  if(action==='cancelCableForm'){ state.pendingCable=null; state.editingCableId=null; render(); return; }
+  if(action==='editCable'){ state.editingCableId=ds.id; render(); return; }
+  if(action==='closeCablePanel'){ state.activeCableId=null; render(); return; }
+  if(action==='deleteCable'){
+    if(confirm('این کابل و انشعاب‌های آن حذف شود؟')){
+      state.assignments = state.assignments.filter(a=>a.cableId!==ds.id && a.toCableId!==ds.id);
+      state.cables = state.cables.filter(c=>c.id!==ds.id);
+      state.editingCableId=null; state.activeCableId=null;
+      await saveCables(); await saveAssignments();
+      toast('کابل حذف شد'); render();
+    }
+    return;
+  }
+  if(action==='toggleManualCable'){ state.showManualCableForm=!state.showManualCableForm; render(); return; }
+  if(action==='cancelManualCable'){ state.showManualCableForm=false; render(); return; }
+
+  /* assignment form */
+  if(action==='toggleAssignForm'){ state.showAddAssign=true; state.assignAction='continue'; render(); return; }
+  if(action==='cancelAssignForm'){ state.showAddAssign=false; render(); return; }
+  if(action==='setAssignAction'){ state.assignAction=el.value; render(); return; }
+  if(action==='deleteAssignment'){
+    if(confirm('این انشعاب حذف شود؟')){
+      state.assignments = state.assignments.filter(a=>a.id!==ds.id);
+      await saveAssignments(); render();
+    }
+    return;
+  }
+}
+
+function initDelegation(){
+  const app = document.getElementById('app');
+
+  app.addEventListener('click', e=>{
+    const t = e.target.closest('[data-action]');
+    if(!t) return;
+    handleAction(t.dataset.action, t.dataset, t, e);
+  });
+
+  app.addEventListener('change', e=>{
+    const t = e.target;
+    if(t.matches('[data-action="setAssignAction"]')) handleAction('setAssignAction', {}, t, e);
+  });
+
+  app.addEventListener('input', e=>{
+    const t = e.target;
+    if(t.dataset && t.dataset.bind){
+      state[t.dataset.bind] = t.value;
+      const focusBind = t.dataset.bind, caret = t.selectionStart;
+      render();
+      const again = app.querySelector(`[data-bind="${focusBind}"]`);
+      if(again){ again.focus(); try{ again.setSelectionRange(caret, caret); }catch(err){} }
+    }
+  });
+
+  app.addEventListener('submit', async e=>{
+    e.preventDefault();
+    const form = e.target.closest('form');
+    if(!form) return;
+    const action = form.dataset.action;
+    const fd = new FormData(form);
+
+    if(action==='submitNode'){
+      const name = (fd.get('name')||'').trim();
+      if(!name){ toast('نام گره الزامی است', true); return; }
+      const type = fd.get('type');
+      const x = Number(fd.get('x')), y = Number(fd.get('y'));
+      const editingId = form.dataset.id;
+      if(editingId){
+        const n = getNode(editingId); Object.assign(n, {name, type});
+        state.editingNodeId=null;
+      } else {
+        state.nodes.push({id:uid(), name, type, x, y});
+        state.pendingNode=null;
+      }
+      await saveNodes(); toast('گره ذخیره شد'); render();
+      return;
+    }
+
+    if(action==='submitCable'){
+      const name=(fd.get('name')||'').trim();
+      const coreCount=parseInt(fd.get('coreCount'),10);
+      const length=fd.get('length')?parseFloat(fd.get('length')):null;
+      const notes=(fd.get('notes')||'').trim();
+      if(!name){ toast('نام کابل الزامی است', true); return; }
+      if(!coreCount||coreCount<1){ toast('تعداد کور نامعتبر است', true); return; }
+      const editingId = form.dataset.id;
+      if(editingId){
+        const c = getCable(editingId);
+        Object.assign(c, {name, coreCount, length, notes});
+        state.editingCableId=null;
+      } else {
+        let fromNodeId = form.dataset.from, toNodeId = form.dataset.to;
+        if(!fromNodeId) fromNodeId = fd.get('fromNodeId');
+        if(!toNodeId) toNodeId = fd.get('toNodeId');
+        if(!fromNodeId || !toNodeId || fromNodeId===toNodeId){ toast('گره مبدأ و مقصد باید متفاوت باشند', true); return; }
+        state.cables.push({id:uid(), name, fromNodeId, toNodeId, coreCount, length, notes});
+        state.pendingCable=null; state.showManualCableForm=false;
+      }
+      await saveCables(); toast('کابل ذخیره شد'); render();
+      return;
+    }
+
+    if(action==='submitAssignment'){
+      const cableId = form.dataset.cable;
+      const cable = getCable(cableId);
+      if(!cable) return;
+      const coreStart = parseInt(fd.get('coreStart'),10);
+      const coreEnd = parseInt(fd.get('coreEnd'),10);
+      if(!coreStart || !coreEnd || coreStart<1 || coreEnd>cable.coreCount || coreStart>coreEnd){ toast('بازهٔ کور نامعتبر است', true); return; }
+      const existing = assignmentsFor(cableId);
+      if(existing.some(a=>overlaps(a.coreStart,a.coreEnd,coreStart,coreEnd))){ toast('این بازه با انشعاب دیگری از همین کابل تداخل دارد', true); return; }
+
+      const action2 = fd.get('action') || state.assignAction;
+      let data = {id:uid(), cableId, coreStart, coreEnd, action:action2};
+      if(action2==='terminate'){
+        data.label = (fd.get('label')||'').trim() || nodeName(cable.toNodeId);
+      } else {
+        const toCableId = fd.get('toCableId');
+        const toCoreStart = parseInt(fd.get('toCoreStart'),10);
+        const toCable = getCable(toCableId);
+        if(!toCable){ toast('کابل مقصد نامعتبر است', true); return; }
+        if(toCable.fromNodeId!==cable.toNodeId){ toast('کابل مقصد باید از همان گره خارج شود', true); return; }
+        const span = coreEnd-coreStart;
+        const toCoreEnd = toCoreStart+span;
+        if(!toCoreStart || toCoreStart<1 || toCoreEnd>toCable.coreCount){ toast('بازهٔ کور در کابل مقصد خارج از محدوده است', true); return; }
+        const targetExisting = state.assignments.filter(a=>a.toCableId===toCableId);
+        if(targetExisting.some(a=>overlaps(a.toCoreStart, a.toCoreStart+(a.coreEnd-a.coreStart), toCoreStart, toCoreEnd))){
+          toast('این بازه از کور کابل مقصد قبلاً استفاده شده', true); return;
+        }
+        data.toCableId=toCableId; data.toCoreStart=toCoreStart;
+      }
+      state.assignments.push(data);
+      state.showAddAssign=false;
+      await saveAssignments(); toast('انشعاب ثبت شد'); render();
+      return;
+    }
+
+    if(action==='runTrace'){
+      state.traceCableId = fd.get('cableId');
+      state.traceCore = fd.get('core');
+      render();
+      return;
+    }
+  });
+}
+
+initDelegation();
+loadData();
+</script>
+</body>
+</html>
